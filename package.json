@@ -4,7 +4,8 @@
   "description": "node pdf creator",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "tsc --project tsconfig.json"
   },
   "homepage": "https://github.com/hajareshyam",
   "keywords": [
