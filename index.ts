@@ -71,23 +71,52 @@ function parseBorder(
 }
 
 /**
+ * Translates html-pdf variables ({{page}}, {{pages}}) to Puppeteer classes
+ */
+function processTemplate(template?: string): string {
+  if (!template) return "<span></span>";
+  return template
+    .replace(/\{\{\s*page\s*\}\}/g, '<span class="pageNumber"></span>')
+    .replace(/\{\{\s*pages\s*\}\}/g, '<span class="totalPages"></span>');
+}
+
+/**
  * Translates PdfOptions (html-pdf API shape) → Puppeteer PDFOptions.
  */
 function buildPuppeteerOptions(options: PdfOptions): PDFOptions {
-  const hasHeader = !!options.header?.contents;
-  const hasFooter = !!options.footer?.contents?.default;
+  const headerContent = options.header?.contents;
+  const footerRaw = options.footer?.contents;
+  const footerContent = typeof footerRaw === "string" ? footerRaw : footerRaw?.default;
+
+  const hasHeader = !!headerContent;
+  const hasFooter = !!footerContent;
+
+  const margin = parseBorder(options.border) || {};
+  if (options.header?.height) {
+    margin.top = options.header.height;
+  }
+  if (options.footer?.height) {
+    margin.bottom = options.footer.height;
+  }
+
+  // Ensure default font styles for headers/footers so they aren't unstyled/tiny
+  const defaultStyles = `font-size: 10px; width: 100%; -webkit-print-color-adjust: exact;`;
 
   return {
     format: options.format,
     landscape: options.orientation === "landscape",
-    margin: parseBorder(options.border),
+    margin,
     width: options.width,
     height: options.height,
     printBackground: options.printBackground ?? true,
     timeout: options.timeout,
     displayHeaderFooter: hasHeader || hasFooter,
-    headerTemplate: options.header?.contents ?? "<span></span>",
-    footerTemplate: options.footer?.contents?.default ?? "<span></span>",
+    headerTemplate: hasHeader
+      ? `<div style="${defaultStyles}">${processTemplate(headerContent)}</div>`
+      : "<span></span>",
+    footerTemplate: hasFooter
+      ? `<div style="${defaultStyles}">${processTemplate(footerContent)}</div>`
+      : "<span></span>",
   };
 }
 

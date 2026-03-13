@@ -34,12 +34,14 @@ interface PdfOptions {
   };
   footer?: {
     height?: string;
-    contents?: {
-      first?: string;
-      last?: string;
-      default?: string;
-      [page: number]: string;
-    };
+    contents?:
+      | string
+      | {
+          first?: string;
+          last?: string;
+          default?: string;
+          [page: number]: string;
+        };
   };
 
   // Rendering
